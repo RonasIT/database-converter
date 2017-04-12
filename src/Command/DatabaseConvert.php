@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Console\Commands;
+namespace RonasIT\Support\Console\Commands;
 
-use App\Console\Support\DataPuller;
+use RonasIT\Support\Console\Support\DataPuller;
 use Illuminate\Console\Command;
 use Illuminate\Config\Repository as Config;
 

@@ -6,7 +6,7 @@
  * Time: 16:27
  */
 
-namespace App\Console\Support;
+namespace RonasIT\Support\Console\Support;
 
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
@@ -15,7 +15,6 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Illuminate\Cache\Repository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Cache\Repository as Cache;
 
 class DataPuller
 {
