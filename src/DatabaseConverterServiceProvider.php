@@ -10,7 +10,7 @@ namespace RonasIT\Support;
 use App\Console\Commands\DatabaseConvert;
 use Illuminate\Support\ServiceProvider;
 
-class EntityGeneratorServiceProvider extends ServiceProvider
+class DatabaseConverterServiceProvider extends ServiceProvider
 {
     public function boot() {
         $this->commands([
