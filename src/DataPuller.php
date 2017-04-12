@@ -6,7 +6,7 @@
  * Time: 16:27
  */
 
-namespace RonasIT\Support\Console\Support;
+namespace RonasIT\Support\DatabaseConverter;
 
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;

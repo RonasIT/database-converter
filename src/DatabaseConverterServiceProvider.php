@@ -7,7 +7,7 @@
  */
 namespace RonasIT\Support;
 
-use RonasIT\Support\Console\Commands\DatabaseConvert;
+use RonasIT\Support\DatabaseConverter\Commands\DatabaseConvert;
 use Illuminate\Support\ServiceProvider;
 
 class DatabaseConverterServiceProvider extends ServiceProvider
