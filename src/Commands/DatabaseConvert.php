@@ -30,6 +30,7 @@ class DatabaseConvert extends Command
         {--only-data}
         {--only-schema}
         {--tables=}
+        {--connection=}
         ';
 
     /**
@@ -95,6 +96,10 @@ class DatabaseConvert extends Command
 
         if ($this->option('only-schema')) {
             $this->dataPuller->setOnlySchema();
+        }
+
+        if ($this->option('connection')) {
+            $this->config->set('database.default', $this->option('connection'));
         }
 
         if ($this->option('tables')) {
