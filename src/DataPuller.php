@@ -28,6 +28,8 @@ class DataPuller
         'sqlite' => SqlitePlatform::class
     ];
     protected $needToConvertToSnakeCase = false;
+    protected $onlyData = false;
+    protected $onlySchema = false;
     protected $dictionary = [];
     protected $tables = [];
 
@@ -42,12 +44,37 @@ class DataPuller
         return $this;
     }
 
+    public function setOnlyData() {
+        $this->onlyData = true;
+
+        return $this;
+    }
+
+    public function setOnlySchema() {
+        $this->onlySchema = true;
+
+        return $this;
+    }
+
+    public function setTables($tables) {
+        $this->tables = $tables;
+
+        return $this;
+    }
+
     public function pull($connectionName) {
         $this->connection = DB::connection($connectionName);
-        $this->tables = $this->getTables();
+        if (empty($this->tables)) {
+            $this->tables = $this->getTables();
+        }
 
-        $this->pullSchema();
-        $this->pullData();
+        if (!$this->onlyData) {
+            $this->pullSchema();
+        }
+
+        if (!$this->onlySchema) {
+            $this->pullData();
+        }
     }
 
     protected function pullSchema() {

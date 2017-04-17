@@ -27,6 +27,9 @@ class DatabaseConvert extends Command
         {--charset=utf-8}
         {--prefix=}
         {--convert-to-snake-case}
+        {--only-data}
+        {--only-schema}
+        {--tables=}
         ';
 
     /**
@@ -64,9 +67,7 @@ class DatabaseConvert extends Command
     {
         $this->buildConnection();
 
-        if ($this->option('convert-to-snake-case')) {
-            $this->dataPuller->setConvertToSnakeCase();
-        }
+        $this->prepareDataCollector();
 
         $this->dataPuller->pull('source');
     }
@@ -81,5 +82,26 @@ class DatabaseConvert extends Command
             'charset' => $this->option('charset'),
             'prefix' => $this->option('prefix')
         ]);
+    }
+
+    protected function prepareDataCollector() {
+        if ($this->option('convert-to-snake-case')) {
+            $this->dataPuller->setConvertToSnakeCase();
+        }
+
+        if ($this->option('only-data')) {
+            $this->dataPuller->setOnlyData();
+        }
+
+        if ($this->option('only-schema')) {
+            $this->dataPuller->setOnlySchema();
+        }
+
+        if ($this->option('tables')) {
+            $param = $this->option('only-schema');
+            $tables = explode(',', $param);
+
+            $this->dataPuller->setTables($tables);
+        }
     }
 }
