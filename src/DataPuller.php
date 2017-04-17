@@ -104,7 +104,8 @@ class DataPuller
     }
 
     protected function getPlatform() {
-        $platform = config('database.default');
+        $connection = config('database.default');
+        $platform = config("database.connections.{$connection}.driver");
 
         return app($this->platforms[$platform]);
     }
