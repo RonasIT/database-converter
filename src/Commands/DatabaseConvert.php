@@ -98,7 +98,7 @@ class DatabaseConvert extends Command
         }
 
         if ($this->option('tables')) {
-            $param = $this->option('only-schema');
+            $param = $this->option('tables');
             $tables = explode(',', $param);
 
             $this->dataPuller->setTables($tables);

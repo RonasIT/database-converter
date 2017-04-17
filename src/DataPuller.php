@@ -64,9 +64,8 @@ class DataPuller
 
     public function pull($connectionName) {
         $this->connection = DB::connection($connectionName);
-        if (empty($this->tables)) {
-            $this->tables = $this->getTables();
-        }
+
+        $this->tables = $this->getTables();
 
         if (!$this->onlyData) {
             $this->pullSchema();
@@ -155,11 +154,19 @@ class DataPuller
     }
 
     protected function getTables() {
-        return $this->cache->remember('tables', 10000, function () {
+        $tables = $this->cache->remember('tables', 10000, function () {
             return $this->connection
                 ->getDoctrineSchemaManager()
                 ->listTables();
         });
+
+        if (!empty($this->tables)) {
+            return array_filter($tables, function ($table) {
+                return in_array($table->getName(), $this->tables);
+            });
+        }
+
+        return $tables;
     }
 
     public function pullTable($table) {
