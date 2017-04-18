@@ -31,6 +31,7 @@ class DatabaseConvert extends Command
         {--only-schema}
         {--tables=}
         {--connection=}
+        {--sample-size=1000}
         ';
 
     /**
@@ -108,5 +109,7 @@ class DatabaseConvert extends Command
 
             $this->dataPuller->setTables($tables);
         }
+
+        $this->dataPuller->setSampleSize($this->option('sample-size'));
     }
 }

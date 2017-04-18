@@ -32,6 +32,7 @@ class DataPuller
     protected $onlySchema = false;
     protected $dictionary = [];
     protected $tables = [];
+    protected $sampleSize = 1000;
 
     public function __construct()
     {
@@ -58,6 +59,12 @@ class DataPuller
 
     public function setTables($tables) {
         $this->tables = $tables;
+
+        return $this;
+    }
+
+    public function setSampleSize($size) {
+        $this->sampleSize = $size;
 
         return $this;
     }
@@ -175,7 +182,10 @@ class DataPuller
 
         $this->connection->table($table->getName())
             ->orderBy($primaryKey)
-            ->chunk(1000, $this->getPullDataCallback($table));
+            ->chunk(
+                $this->sampleSize,
+                $this->getPullDataCallback($table)
+            );
     }
 
     protected function getPrimaryKey($table) {

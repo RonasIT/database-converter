@@ -1,6 +1,6 @@
 {
   "name": "ronasit/database-converter",
-  "version" : "0.0.8",
+  "version" : "0.0.9",
   "description": "Privided console command for converting databases.",
   "keywords": ["laravel", "database", "converter"],
   "license": "MIT",
