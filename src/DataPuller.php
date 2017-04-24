@@ -153,6 +153,14 @@ class DataPuller
                 $this->dictionary[$duplicatedName] = "{$duplicatedName}_1";
             }
         }
+
+        usort($this->dictionary, function ($a, $b) {
+            if (strlen($a) == strlen($b)) {
+                return 0;
+            }
+
+            return (strlen($a) > strlen($b)) ? -1 : 1;
+        });
     }
 
     protected function addToDictionary($item) {
