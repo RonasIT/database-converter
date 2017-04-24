@@ -131,7 +131,7 @@ class DataPuller
         }
 
         foreach ($this->dictionary as $key => $value) {
-            $query = str_replace($key, $value, $query);
+            $query = str_replace(strtolower($key), $value, strtolower($query));
         }
 
         return $query;
