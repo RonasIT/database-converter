@@ -130,8 +130,12 @@ class DataPuller
             $this->buildDictionary();
         }
 
-        foreach ($this->dictionary as $key => $value) {
-            $query = str_replace(strtolower($key), $value, strtolower($query));
+        foreach ($this->dictionary as $value) {
+            $original = strtolower($value['original']);
+            $replacedAt = strtolower($value['replace_at']);
+            $query = strtolower($query);
+
+            $query = str_replace($original, $replacedAt, $query);
         }
 
         return $query;
@@ -150,23 +154,29 @@ class DataPuller
             $duplicatedNames = array_duplicate($columnNames);
 
             foreach ($duplicatedNames as $duplicatedName) {
-                $this->dictionary[$duplicatedName] = "{$duplicatedName}_1";
+                $this->dictionary[] = [
+                    'original' => $duplicatedName,
+                    'replace_at' => "{$duplicatedName}_1"
+                ];
             }
         }
 
         usort($this->dictionary, function ($a, $b) {
-            if (strlen($a) == strlen($b)) {
+            if (strlen($a['original']) == strlen($b['original'])) {
                 return 0;
             }
 
-            return (strlen($a) > strlen($b)) ? -1 : 1;
+            return (strlen($a['original']) > strlen($b['original'])) ? -1 : 1;
         });
     }
 
     protected function addToDictionary($item) {
         $name = $item->getName();
 
-        $this->dictionary[$name] = snake_case($name);
+        $this->dictionary[] = [
+            'original' => $name,
+            'replace_at' => snake_case($name)
+        ];
     }
 
     protected function getTables() {
