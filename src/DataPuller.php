@@ -75,6 +75,10 @@ class DataPuller
 
         $this->tables = $this->getTables();
 
+        if ($this->needToConvertToSnakeCase){
+            $this->buildDictionary();
+        }
+
         if (!$this->onlyData) {
             $this->pullSchema();
         }
@@ -143,10 +147,6 @@ class DataPuller
     }
 
     protected function convertToSnakeCase($query) {
-        if (empty($this->dictionary)) {
-            $this->buildDictionary();
-        }
-
         foreach ($this->dictionary as $data) {
             if (str_contains($query, $data['origin'])) {
                 $this->replace($query, $data['origin'], $data['replace_to']);
@@ -183,19 +183,14 @@ class DataPuller
                     'replace_to' => $replaceTo
                 ];
             }
+
+            $this->sortDictionary(
+                $this->dictionary[$convertedTableName]['columns'],
+                'origin'
+            );
         }
 
-        usort($this->dictionary, function ($a, $b) {
-            if (strlen($a['replace_to']) == strlen($b['replace_to'])) {
-                return 0;
-            }
-
-            return (strlen($a['replace_to']) > strlen($b['replace_to'])) ? -1 : 1;
-        });
-
-        $this->dictionary = $this->uniqueByValue($this->dictionary, function($table) {
-            return $table['replace_to'];
-        });
+        $this->sortDictionary($this->dictionary);
     }
 
     protected function addToDictionary($item) {
@@ -319,5 +314,19 @@ class DataPuller
         $haystack = strtolower($haystack);
 
         $haystack = str_replace($original, $replacedAt, $haystack);
+    }
+
+    private function sortDictionary(&$dictionary, $primaryKey = 'replace_to') {
+        usort($dictionary, function ($a, $b) {
+            if (strlen($a['replace_to']) == strlen($b['replace_to'])) {
+                return 0;
+            }
+
+            return (strlen($a['replace_to']) > strlen($b['replace_to'])) ? -1 : 1;
+        });
+
+        $dictionary = $this->uniqueByValue($dictionary, function($item) use ($primaryKey) {
+            return $item[$primaryKey];
+        });
     }
 }
