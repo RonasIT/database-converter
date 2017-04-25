@@ -32,6 +32,7 @@ class DataPuller
     protected $onlySchema = false;
     protected $dictionary = [];
     protected $tables = [];
+    protected $indices = [];
     protected $sampleSize = 1000;
 
     public function __construct()
@@ -81,15 +82,31 @@ class DataPuller
         if (!$this->onlySchema) {
             $this->pullData();
         }
+
+        if (!$this->onlyData) {
+            $this->pullIndices();
+        }
     }
 
     protected function pullSchema() {
         $queries = $this->getQueries();
 
         foreach ($queries as $query) {
-            DB::statement(
-                $this->prepareQuery($query)
-            );
+            $query = $this->prepareQuery($query);
+
+            if ($this->isIndex($query)) {
+                $this->indices[] = $query;
+
+                continue;
+            }
+
+            DB::statement($query);
+        }
+    }
+
+    protected function pullIndices() {
+        foreach ($this->indices as $query) {
+            DB::statement($query);
         }
     }
 
@@ -253,5 +270,9 @@ class DataPuller
         }
 
         return $item;
+    }
+
+    private function isIndex($query) {
+        return str_contains($query, ' index ') || str_contains($query, 'foreign');
     }
 }
