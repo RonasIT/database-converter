@@ -148,7 +148,7 @@ class DataPuller
 
     protected function convertToSnakeCase($query) {
         foreach ($this->dictionary as $data) {
-            if (str_contains($query, $data['origin'])) {
+            if ($this->needToReplace($query, $data)) {
                 $replacement = array_merge(
                     [$data], $data['columns']
                 );
@@ -330,5 +330,12 @@ class DataPuller
         $dictionary = $this->uniqueByValue($dictionary, function($item) use ($primaryKey) {
             return $item[$primaryKey];
         });
+    }
+
+    private function needToReplace($query, $data) {
+        return str_contains(
+            strtolower($query),
+            strtolower($data['origin'])
+        );
     }
 }
