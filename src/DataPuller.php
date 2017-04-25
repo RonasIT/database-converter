@@ -147,12 +147,14 @@ class DataPuller
             $this->buildDictionary();
         }
 
-        foreach ($this->dictionary as $value) {
-            $original = strtolower($value['original']);
-            $replacedAt = strtolower($value['replace_at']);
-            $query = strtolower($query);
+        foreach ($this->dictionary as $data) {
+            if (str_contains($query, $data['origin'])) {
+                $this->replace($query, $data['origin'], $data['replace_to']);
 
-            $query = str_replace($original, $replacedAt, $query);
+                foreach ($data['columns'] as $columnName => $columnData) {
+                    $this->replace($query, $columnData['origin'], $columnData['replace_to']);
+                }
+            }
         }
 
         return $query;
@@ -160,30 +162,39 @@ class DataPuller
 
     protected function buildDictionary() {
         foreach ($this->tables as $table) {
-            $this->addToDictionary($table);
+            $tableName = $table->getName();
+            $convertedTableName = snake_case($tableName);
 
-            $columnNames = array_map(function ($column) {
-                $this->addToDictionary($column);
+            $this->dictionary[$convertedTableName] = [
+                'origin' => $tableName,
+                'replace_to' => $convertedTableName
+            ];
 
-                return snake_case($column->getName());
-            }, $table->getColumns());
+            foreach ($table->getColumns() as $column) {
+                $columnName = $column->getName();
+                $replaceTo = snake_case($columnName);
 
-            $duplicatedNames = array_duplicate($columnNames);
+                if ($this->isDuplicateColumnName($convertedTableName, $replaceTo)) {
+                    $replaceTo .= '_1';
+                }
 
-            foreach ($duplicatedNames as $duplicatedName) {
-                $this->dictionary[] = [
-                    'original' => $duplicatedName,
-                    'replace_at' => "{$duplicatedName}_1"
+                $this->dictionary[$convertedTableName]['columns'][$columnName] = [
+                    'origin' => $columnName,
+                    'replace_to' => $replaceTo
                 ];
             }
         }
 
         usort($this->dictionary, function ($a, $b) {
-            if (strlen($a['original']) == strlen($b['original'])) {
+            if (strlen($a['replace_to']) == strlen($b['replace_to'])) {
                 return 0;
             }
 
-            return (strlen($a['original']) > strlen($b['original'])) ? -1 : 1;
+            return (strlen($a['replace_to']) > strlen($b['replace_to'])) ? -1 : 1;
+        });
+
+        $this->dictionary = $this->uniqueByValue($this->dictionary, function($table) {
+            return $table['replace_to'];
         });
     }
 
@@ -243,11 +254,14 @@ class DataPuller
 
     protected function prepareItem($item, $table)
     {
-        $dataWithConvertedKeys = array_associate(
+        $item = array_associate(
             (array)$item,
-            function ($value, $key) {
+            function ($value, $key) use ($table) {
                 if ($this->needToConvertToSnakeCase) {
-                    $key = snake_case($key);
+                    $key = array_get(
+                        $this->dictionary,
+                        "{$table}.columns.{$key}.replace_to"
+                    );
                 }
 
                 return [
@@ -257,9 +271,7 @@ class DataPuller
             }
         );
 
-        $destinationDBFields = DB::getSchemaBuilder()->getColumnListing($table);
-
-        return array_only($dataWithConvertedKeys, $destinationDBFields);
+        return array_except($item, ['', null]);
     }
 
     protected function getItemName($item) {
@@ -274,5 +286,38 @@ class DataPuller
 
     private function isIndex($query) {
         return str_contains($query, ' index ') || str_contains($query, 'foreign');
+    }
+
+    private function uniqueByValue($array, $callback) {
+        $data = [];
+
+        foreach ($array as $value) {
+            $result = $callback($value);
+
+            $data[$result] = $value;
+        }
+
+        return $data;
+    }
+
+    private function isDuplicateColumnName($table, $replaceTo) {
+        if (empty($this->dictionary[$table]['columns'])) {
+            return false;
+        }
+
+        $columnNameList = array_get_list(
+            $this->dictionary,
+            "{$table}.columns.*.replace_to"
+        );
+
+        return in_array($replaceTo, $columnNameList);
+    }
+
+    private function replace(&$haystack, $original, $replace) {
+        $original = strtolower($original);
+        $replacedAt = strtolower($replace);
+        $haystack = strtolower($haystack);
+
+        $haystack = str_replace($original, $replacedAt, $haystack);
     }
 }
