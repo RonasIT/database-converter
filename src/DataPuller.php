@@ -149,10 +149,17 @@ class DataPuller
     protected function convertToSnakeCase($query) {
         foreach ($this->dictionary as $data) {
             if (str_contains($query, $data['origin'])) {
-                $this->replace($query, $data['origin'], $data['replace_to']);
+                $replacement = array_merge(
+                    [$data], $data['columns']
+                );
 
-                foreach ($data['columns'] as $columnName => $columnData) {
-                    $this->replace($query, $columnData['origin'], $columnData['replace_to']);
+                $this->sortDictionary(
+                    $replacement,
+                    'replace_to'
+                );
+
+                foreach ($replacement as $replace) {
+                    $this->replace($query, $replace['origin'], $replace['replace_to']);
                 }
             }
         }
@@ -183,11 +190,6 @@ class DataPuller
                     'replace_to' => $replaceTo
                 ];
             }
-
-            $this->sortDictionary(
-                $this->dictionary[$convertedTableName]['columns'],
-                'origin'
-            );
         }
 
         $this->sortDictionary($this->dictionary);
