@@ -29,6 +29,7 @@ class DatabaseConvert extends Command
         {--convert-to-snake-case}
         {--only-data}
         {--only-schema}
+        {--only-indices}
         {--tables=}
         {--connection=}
         {--sample-size=1000}
@@ -97,6 +98,10 @@ class DatabaseConvert extends Command
 
         if ($this->option('only-schema')) {
             $this->dataPuller->setOnlySchema();
+        }
+
+        if ($this->option('only-indices')) {
+            $this->dataPuller->setOnlyIndices();
         }
 
         if ($this->option('connection')) {

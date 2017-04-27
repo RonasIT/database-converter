@@ -14,6 +14,7 @@ use Doctrine\DBAL\Platforms\PostgreSqlPlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServerPlatform;
 use Illuminate\Cache\Repository;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 class DataPuller
@@ -30,6 +31,7 @@ class DataPuller
     protected $needToConvertToSnakeCase = false;
     protected $onlyData = false;
     protected $onlySchema = false;
+    protected $onlyIndices = false;
     protected $dictionary = [];
     protected $tables = [];
     protected $indices = [];
@@ -54,6 +56,12 @@ class DataPuller
 
     public function setOnlySchema() {
         $this->onlySchema = true;
+
+        return $this;
+    }
+
+    public function setOnlyIndices() {
+        $this->onlyIndices = true;
 
         return $this;
     }
@@ -83,7 +91,7 @@ class DataPuller
             $this->pullSchema();
         }
 
-        if (!$this->onlySchema) {
+        if (!$this->onlySchema && !$this->onlyIndices) {
             $this->pullData();
         }
 
@@ -104,13 +112,20 @@ class DataPuller
                 continue;
             }
 
-            DB::statement($query);
+            if (!$this->onlyIndices) {
+                DB::statement($query);
+            }
         }
     }
 
     protected function pullIndices() {
         foreach ($this->indices as $query) {
-            DB::statement($query);
+            try {
+                DB::statement($query);
+            } catch (QueryException $exception) {
+                continue;
+            }
+
         }
     }
 
